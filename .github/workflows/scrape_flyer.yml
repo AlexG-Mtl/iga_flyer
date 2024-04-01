@@ -1,0 +1,25 @@
+name: Fetch  IGA Flyer
+
+on:
+  push:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 13 * * *'
+
+jobs:
+  scheduled:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetches repo
+        uses: actions/checkout@v3
+      - name: Get and format api
+        run: |-
+          curl https://dam.flippenterprise.net/flyerkit/publication/6460983/products?display_type=all&source=hosted2&locale=en&access_token=692be3f8ba9e9247dc13d064cb89e7f9 | jq . > iga_flyer.json
+      - name: Add results to config
+        run: |-
+          git config user.name "Automated"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A *.json
+          timestamp=$(date -u -Is)
+          git commit -m "Update data on ${timestamp}" || exit 0
+          git push	
